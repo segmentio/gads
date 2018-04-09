@@ -257,7 +257,7 @@ func NewMutateMembersOperand() *MutateMembersOperand {
 //
 //     https://developers.google.com/adwords/api/docs/reference/v201809/AdwordsUserListService#get
 //
-func (s AdwordsUserListService) Get(selector Selector) (userLists []UserList, err error) {
+func (s AdwordsUserListService) Get(selector Selector) ([]UserList, []byte, error) {
 	selector.XMLName = xml.Name{Space: baseRemarketingUrl, Local: "serviceSelector"}
 	respBody, err := s.Auth.request(
 		adwordsUserListServiceUrl,
@@ -275,7 +275,7 @@ func (s AdwordsUserListService) Get(selector Selector) (userLists []UserList, er
 		nil,
 	)
 	if err != nil {
-		return userLists, err
+		return nil, respBody, err
 	}
 	getResp := struct {
 		Size      int64      `xml:"rval>totalNumEntries"`
@@ -283,9 +283,9 @@ func (s AdwordsUserListService) Get(selector Selector) (userLists []UserList, er
 	}{}
 	err = xml.Unmarshal([]byte(respBody), &getResp)
 	if err != nil {
-		return userLists, err
+		return nil, respBody, err
 	}
-	return getResp.UserLists, err
+	return getResp.UserLists, respBody, err
 }
 
 // Mutate adds/sets a collection of user lists. Returns a list of User Lists
@@ -310,7 +310,7 @@ func (s AdwordsUserListService) Get(selector Selector) (userLists []UserList, er
 //
 //     https://developers.google.com/adwords/api/docs/reference/v201809/AdwordsUserListService#mutate
 //
-func (s *AdwordsUserListService) Mutate(userListOperations UserListOperations) (adwordsUserLists []UserList, err error) {
+func (s *AdwordsUserListService) Mutate(userListOperations UserListOperations) ([]UserList, []byte, error) {
 
 	userListOperations.XMLName = xml.Name{
 		Space: baseRemarketingUrl,
@@ -319,17 +319,17 @@ func (s *AdwordsUserListService) Mutate(userListOperations UserListOperations) (
 
 	respBody, err := s.Auth.request(adwordsUserListServiceUrl, "mutate", userListOperations, nil)
 	if err != nil {
-		return adwordsUserLists, err
+		return nil, respBody, err
 	}
 	mutateResp := struct {
 		AdwordsUserLists []UserList `xml:"rval>value"`
 	}{}
 	err = xml.Unmarshal([]byte(respBody), &mutateResp)
 	if err != nil {
-		return adwordsUserLists, err
+		return nil, respBody, err
 	}
 
-	return mutateResp.AdwordsUserLists, err
+	return mutateResp.AdwordsUserLists, respBody, err
 }
 
 // Mutate adds/removes members/emails to specified user list.
@@ -360,7 +360,7 @@ func (s *AdwordsUserListService) Mutate(userListOperations UserListOperations) (
 //
 //     https://developers.google.com/adwords/api/docs/reference/v201809/AdwordsUserListService#mutateMembers
 //
-func (s *AdwordsUserListService) MutateMembers(mutateMembersOperations MutateMembersOperations) (adwordsUserLists []UserList, err error) {
+func (s *AdwordsUserListService) MutateMembers(mutateMembersOperations MutateMembersOperations) ([]UserList, []byte, error) {
 	mutateMembersOperations.XMLName = xml.Name{
 		Space: baseRemarketingUrl,
 		Local: "mutateMembers",
@@ -368,17 +368,17 @@ func (s *AdwordsUserListService) MutateMembers(mutateMembersOperations MutateMem
 
 	respBody, err := s.Auth.request(adwordsUserListServiceUrl, "mutateMembers", mutateMembersOperations, nil)
 	if err != nil {
-		return adwordsUserLists, err
+		return nil, respBody, err
 	}
 	mutateResp := struct {
 		AdwordsUserLists []UserList `xml:"rval>userLists"`
 	}{}
 	err = xml.Unmarshal([]byte(respBody), &mutateResp)
 	if err != nil {
-		return adwordsUserLists, err
+		return nil, respBody, err
 	}
 
-	return mutateResp.AdwordsUserLists, err
+	return mutateResp.AdwordsUserLists, respBody, err
 }
 
 // MarshalXML is custom XML marshalling logc for the MutateMembersOperand object
